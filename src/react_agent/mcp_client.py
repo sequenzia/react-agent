@@ -1,7 +1,7 @@
 """MCP (Model Context Protocol) server integration for custom tools."""
 
 from typing import List, Dict, Any, Optional
-from langchain.tools import StructuredTool
+from langchain_core.tools import StructuredTool
 from pydantic import BaseModel, Field
 import json
 import asyncio
