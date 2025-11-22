@@ -21,8 +21,26 @@ A general-purpose AI Agent implementation using the ReAct (Reasoning and Acting)
 
 ## Installation
 
+This project uses [UV](https://docs.astral.sh/uv/) for fast, reliable Python package management.
+
+### Install UV
+
 ```bash
-pip install -r requirements.txt
+# On macOS and Linux
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# On Windows
+powershell -c "irm https://astral.sh/uv/install.ps1 | iex"
+```
+
+### Install Dependencies
+
+```bash
+# Install all dependencies
+uv sync
+
+# Install with development dependencies
+uv sync --all-extras
 ```
 
 ## Configuration
