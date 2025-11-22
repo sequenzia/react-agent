@@ -7,7 +7,7 @@ from datetime import datetime
 
 from langchain_openai import ChatOpenAI
 from langchain.agents import create_react_agent
-from langchain.agents.agent import AgentExecutor
+from langchain_classic.agents import AgentExecutor
 from langchain.prompts import PromptTemplate
 from langchain.tools import BaseTool
 
