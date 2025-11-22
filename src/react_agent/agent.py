@@ -6,7 +6,7 @@ import logging
 from datetime import datetime
 
 from langchain_openai import ChatOpenAI
-from langgraph.prebuilt import create_react_agent
+from langchain.agents import create_react_agent
 from langchain.tools import BaseTool
 
 from .context_manager import ContextManager, MessageRole, CompactionStrategy
