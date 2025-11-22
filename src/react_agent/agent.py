@@ -6,7 +6,7 @@ import logging
 from datetime import datetime
 
 from langchain_openai import ChatOpenAI
-from langchain.agents import create_react_agent
+from langchain.agents import create_agent
 from langchain.tools import BaseTool
 
 from .context_manager import ContextManager, MessageRole, CompactionStrategy
@@ -165,11 +165,11 @@ When you have enough information to answer the question, provide your final answ
             all_tools = self.tools + self.mcp_client.get_tools()
 
             # Create ReAct agent using LangGraph
-            # The state_modifier adds the system prompt to messages
-            self._agent_graph = create_react_agent(
+            # The system_prompt parameter sets the agent's behavior
+            self._agent_graph = create_agent(
                 model=self.llm,
                 tools=all_tools,
-                state_modifier=self.system_prompt
+                system_prompt=self.system_prompt
             )
 
         return self._agent_graph
