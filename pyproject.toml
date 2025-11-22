@@ -19,18 +19,17 @@ classifiers = [
     "Programming Language :: Python :: 3.13",
 ]
 dependencies = [
-    "langchain>=0.1.0",
-    "langchain-core>=0.1.0",
-    "langchain-openai>=0.0.5",
-    "langgraph>=0.0.20",
-    "langsmith>=0.1.0",
+    "langchain>=1.0.8",
+    "langchain-openai>=1.0.3",
+    "langgraph>=1.0.3",
+    "langsmith>=0.4.46",
     "tiktoken>=0.5.0",
-    "mcp>=0.1.0",
-    "pydantic>=2.0.0",
+    "mcp>=1.14.0",
+    "pydantic>=2.11.9",
     "python-dotenv>=1.0.0",
 ]
 
-[project.optional-dependencies]
+[dependency-groups]
 dev = [
     "pytest>=7.0.0",
     "black>=23.0.0",
@@ -41,20 +40,13 @@ dev = [
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
-[tool.uv]
-dev-dependencies = [
-    "pytest>=7.0.0",
-    "black>=23.0.0",
-    "ruff>=0.1.0",
-]
-
 [tool.hatch.build.targets.wheel]
 packages = ["src/react_agent"]
 
 [tool.black]
-line-length = 100
+line-length = 119
 target-version = ['py312']
 
 [tool.ruff]
-line-length = 100
+line-length = 119
 target-version = "py312"
