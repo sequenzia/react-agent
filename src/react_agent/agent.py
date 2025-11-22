@@ -6,9 +6,7 @@ import logging
 from datetime import datetime
 
 from langchain_openai import ChatOpenAI
-from langchain.agents import create_react_agent
-from langchain.agents.agent import AgentExecutor
-from langchain.prompts import PromptTemplate
+from langgraph.prebuilt import create_react_agent
 from langchain.tools import BaseTool
 
 from .context_manager import ContextManager, MessageRole, CompactionStrategy
@@ -112,8 +110,8 @@ class ReactAgent:
         self.system_prompt = system_prompt or self._default_system_prompt()
         self.context_manager.add_message(MessageRole.SYSTEM, self.system_prompt)
 
-        # Agent executor (will be created when needed)
-        self._agent_executor = None
+        # Agent graph (will be created when needed)
+        self._agent_graph = None
 
         logger.info(f"ReactAgent initialized with model: {model_name}")
 
@@ -156,63 +154,32 @@ When you have enough information to answer the question, provide your final answ
             run_bash_command,
         ]
 
-    def _get_agent_executor(self) -> AgentExecutor:
-        """Get or create the agent executor.
+    def _get_agent_graph(self):
+        """Get or create the agent graph.
 
         Returns:
-            AgentExecutor instance
+            LangGraph agent graph instance
         """
-        if self._agent_executor is None:
+        if self._agent_graph is None:
             # Combine built-in tools with MCP tools
             all_tools = self.tools + self.mcp_client.get_tools()
 
-            # Create ReAct prompt
-            react_prompt = PromptTemplate.from_template(
-                """Answer the following questions as best you can. You have access to the following tools:
-
-{tools}
-
-Use the following format:
-
-Question: the input question you must answer
-Thought: you should always think about what to do
-Action: the action to take, should be one of [{tool_names}]
-Action Input: the input to the action
-Observation: the result of the action
-... (this Thought/Action/Action Input/Observation can repeat N times)
-Thought: I now know the final answer
-Final Answer: the final answer to the original input question
-
-Begin!
-
-Question: {input}
-Thought:{agent_scratchpad}"""
-            )
-
-            # Create agent
-            agent = create_react_agent(
-                llm=self.llm,
+            # Create ReAct agent using LangGraph
+            # The state_modifier adds the system prompt to messages
+            self._agent_graph = create_react_agent(
+                model=self.llm,
                 tools=all_tools,
-                prompt=react_prompt
+                state_modifier=self.system_prompt
             )
 
-            # Create agent executor
-            self._agent_executor = AgentExecutor(
-                agent=agent,
-                tools=all_tools,
-                verbose=True,
-                max_iterations=self.max_iterations,
-                handle_parsing_errors=True
-            )
-
-        return self._agent_executor
+        return self._agent_graph
 
     def run(self, task: str, **kwargs) -> str:
         """Run the agent on a task.
 
         Args:
             task: Task description
-            **kwargs: Additional arguments for the agent executor
+            **kwargs: Additional arguments for the agent graph
 
         Returns:
             Agent's response
@@ -228,14 +195,24 @@ Thought:{agent_scratchpad}"""
             logger.info(f"Compaction saved {tokens_saved} tokens")
 
         try:
-            # Get agent executor
-            executor = self._get_agent_executor()
+            # Get agent graph
+            agent = self._get_agent_graph()
 
-            # Execute task
-            result = executor.invoke({"input": task}, **kwargs)
+            # Execute task using LangGraph message-based interface
+            result = agent.invoke(
+                {"messages": [{"role": "user", "content": task}]},
+                **kwargs
+            )
 
-            # Extract response
-            response = result.get("output", str(result))
+            # Extract response from the last message
+            # LangGraph returns messages in the state
+            response_messages = result.get("messages", [])
+            if response_messages:
+                # Get the last AI message
+                last_message = response_messages[-1]
+                response = last_message.content if hasattr(last_message, 'content') else str(last_message)
+            else:
+                response = str(result)
 
             # Add response to context
             self.context_manager.add_message(MessageRole.ASSISTANT, response)
@@ -260,7 +237,7 @@ Thought:{agent_scratchpad}"""
             tool: LangChain BaseTool instance
         """
         self.tools.append(tool)
-        self._agent_executor = None  # Reset executor to include new tool
+        self._agent_graph = None  # Reset graph to include new tool
         logger.info(f"Added tool: {tool.name}")
 
     def add_mcp_server(self, url: str, name: Optional[str] = None, api_key: Optional[str] = None):
@@ -273,7 +250,7 @@ Thought:{agent_scratchpad}"""
         """
         success = self.mcp_client.add_server(url, name, api_key)
         if success:
-            self._agent_executor = None  # Reset executor to include new tools
+            self._agent_graph = None  # Reset graph to include new tools
             logger.info(f"Added MCP server: {name or url}")
         return success
 
