@@ -49,7 +49,7 @@ dev-dependencies = [
 ]
 
 [tool.hatch.build.targets.wheel]
-packages = ["react_agent"]
+packages = ["src/react_agent"]
 
 [tool.black]
 line-length = 100
