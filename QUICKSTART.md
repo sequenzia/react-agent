@@ -4,13 +4,29 @@ Get started with ReactAgent in minutes!
 
 ## Installation
 
-1. **Install dependencies:**
+This project uses [UV](https://docs.astral.sh/uv/) for fast, reliable Python package management.
+
+1. **Install UV:**
 
 ```bash
-pip install -r requirements.txt
+# On macOS and Linux
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# On Windows
+powershell -c "irm https://astral.sh/uv/install.ps1 | iex"
 ```
 
-2. **Set up configuration:**
+2. **Install dependencies:**
+
+```bash
+# Install all dependencies
+uv sync
+
+# Install with development dependencies
+uv sync --all-extras
+```
+
+3. **Set up configuration:**
 
 ```bash
 cp .env.example .env
@@ -161,6 +177,11 @@ Check out the `examples/` directory for more:
 Run an example:
 
 ```bash
+# With UV
+uv run python examples/basic_usage.py
+
+# Or activate the virtual environment first
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 python examples/basic_usage.py
 ```
 
@@ -169,7 +190,11 @@ python examples/basic_usage.py
 Run the test suite:
 
 ```bash
-pip install pytest
+# With UV
+uv run pytest tests/
+
+# Or activate the virtual environment first
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 pytest tests/
 ```
 
