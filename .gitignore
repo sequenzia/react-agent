@@ -205,3 +205,12 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# ReactAgent specific
+*.json
+*.log
+agent_state*.json
+*_context.json
+workflow*.json
+full_agent_state*.json
+subagent_state*.json
